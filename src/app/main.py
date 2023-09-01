@@ -12,8 +12,6 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
-PROTOCOL = os.environ.get('PROTOCOL')
-HOST = os.environ.get('HOST')
 MONGO_HOST = os.environ.get('MONGO_HOST')
 MONGO_PORT = os.environ.get('MONGO_PORT')
 
@@ -24,17 +22,6 @@ config.load_incluster_config()
 async def get_mongo():
     video_db = AsyncIOMotorClient(f'mongodb://{MONGO_HOST}:{MONGO_PORT}').video
     app.fs = AsyncIOMotorGridFSBucket(video_db)
-
-
-async def _get_videos():
-    videos = app.fs.find()
-    docs = await videos.to_list(None)
-    video_urls = ''
-    for i in docs:
-        filename = i['filename']
-        v = f'<a href="{PROTOCOL}://{HOST}/app/stream/{filename}" target="_blank">http://{HOST}/stream/{filename}</a>'
-        video_urls = video_urls + '<br>' + v
-    return video_urls
 
 
 async def _process_video(filename):
@@ -64,8 +51,13 @@ async def upload(file: UploadFile, background_tasks: BackgroundTasks):
         await grid_in.close()
 
         background_tasks.add_task(_process_video, file.filename)
-        videos = await _get_videos()
-        return videos
+        base_filename = os.path.splitext(file.filename)[0]
+        output_filename = f"{base_filename}_stabilized.mp4"
+        response_text = f"""Successfully uploaded {file.filename}
+                        View it in your browser at http://localhost/api/stream/{file.filename}
+                        Kubernetes batch job is running; when complete,
+                        you can view the processed video at http://localhost/api/stream/{output_filename}"""
+        return response_text
     return ''
 
 
