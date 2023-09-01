@@ -1,0 +1,60 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-api
+  labels:
+    app: web-api
+spec:
+  selector:
+    matchLabels:
+      app: web-api
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: web-api
+    spec:
+      containers:
+        - name: web-api
+          image: jdvincent/batch-process-example-app:latest
+          env:
+            - name: MONGO_HOST
+              value: "mongo"
+            - name: MONGO_PORT
+              value: "27017"
+          ports:
+            - name: web-api
+              containerPort: 8000
+              protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-api
+spec:
+  ports:
+    - port: 8000
+      targetPort: 8000
+      name: web-api
+  selector:
+    app: web-api
+  type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: web-api
+spec:
+  ingressClassName: kong
+  rules:
+    - host: null
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: web-api
+                port:
+                  number: 8000
