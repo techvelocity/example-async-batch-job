@@ -17,7 +17,8 @@ spec:
     spec:
       containers:
         - name: web-api
-          image: jdvincent/batch-process-example-app:latest
+          image: fastapi-video-app:latest
+          imagePullPolicy: IfNotPresent
           env:
             - name: MONGO_HOST
               value: "mongo"

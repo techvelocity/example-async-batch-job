@@ -6,5 +6,13 @@ configurations:
     name: "Run With Velocity"
     language: "python"
     build:
-      dockerfile-path: "./src/app/Dockerfile"
       build-context-path: "./src/app"
+      dockerfile-path: "./src/app/Dockerfile"
+      workload-based: false
+  jb-1-vBzTUweDnvVAV5FR:
+    name: "Run With Velocity"
+    language: "python"
+    build:
+      build-context-path: "./src/app"
+      dockerfile-path: "./src/app/Dockerfile"
+      workload-based: false
